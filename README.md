@@ -1,2 +1,6 @@
-# ECE9343_DS_Algo
-I'm going to implement data structures and algorithms in C++
+# ECE9343_Data Structure and Algorithm course at NYU
+## Implementation in C++
+1. Tree
+2. Linked List
+3. Vector
+4. Unordered Map

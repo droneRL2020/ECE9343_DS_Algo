@@ -25,5 +25,6 @@ private:
 	void printInorder(TreeNode*& m_root);
 	void printPreorder(TreeNode*& m_root);
 	void printPostorder(TreeNode*& m_root);
+	void removeLeaves(TreeNode*& parent, TreeNode*& child, const int value, int flag);
 };
 

@@ -1,6 +1,7 @@
 #include "Tree.h"
 #include <vector>
 
+
 Tree::Tree()
 	:m_root(nullptr)
 {}
@@ -10,54 +11,137 @@ Tree::~Tree()
 
 void Tree::addNode(int value)
 {
-	std::vector<int> vec;
-	if (m_root == nullptr) 
-	{
-		m_root = new TreeNode();
-		m_root->left = nullptr;
-		m_root->data = value;
-		m_root->right = nullptr;
-	}
-	else {
-		// Do with Recursion
-		TreeNode* node = m_root;
-		insert(node, value);
-	}
+	m_root = insert(m_root, value);
 }
 
 
-void Tree::insert(TreeNode* &node, const int value) const
+Tree::TreeNode* Tree::newNode(int value)
 {
-	//TODO : AVL Tree
-	if (node == nullptr) 
-	{
-		node = new TreeNode();
-		node->data = value;
-		return;
-	}
-	else 
-	{
-		if(value >= node->data)
-		{
-			//m_root->right = node;
-			insert(node->right, value);
-		}
-		else
-		{
-			insert(node->left, value);
-		}
-	}
+	TreeNode* node = new TreeNode();
+	node->data = value;
+	node->left = nullptr;
+	node->right = nullptr;
+	node->height = 1;
+	return node;
 }
 
 
-void Tree::printInorder(TreeNode*& node)
+Tree::TreeNode* Tree::insert(TreeNode* node, int value)
+{
+	/* 1. Perform normal BST insertion*/
+	if (node == nullptr)
+	{
+	    //m_root = new TreeNode();
+		return newNode(value);
+	}
+	if (value < node->data)
+	{
+		node->left = insert(node->left, value);
+	}
+	else if (value > node->data)
+	{
+		node->right = insert(node->right, value);
+	}
+	else
+	{
+		return node;
+	}
+	
+	/* 2. Update height of ancestor */
+	node->height = 1 + max(height(node->left), height(node->right));
+
+	/* 3. Get balance factor */
+	int balance = getBalance(node);
+	//Left Left Case
+	if (balance > 1 && value < node->left->data)
+	{
+		return rightRotate(node);
+	}
+	//Right Right Case  
+	if (balance < -1 && value > node->right->data)
+	{
+		return leftRotate(node);
+	}
+	// Left Right Case
+	if (balance > 1 && value > node->left->data)
+	{
+		node->left = leftRotate(node->left);
+		return rightRotate(node);
+	}
+	// Right Left Case
+	if (balance < -1 && value < node->right->data)
+	{
+		node->right = rightRotate(node->right);
+		return leftRotate(node);
+	}
+	return node;
+}
+
+int Tree::height(TreeNode* N)
+{
+	if (N == nullptr)
+		return 0;
+	else
+	{
+		return N->height;
+	}
+}
+
+int Tree::max(int a, int b)
+{
+    return (a > b) ? a : b; 
+}
+
+int Tree::getBalance(TreeNode* N)
+{
+	if (N == nullptr)
+		return 0;
+	else
+	{
+		return height(N->left) - height(N->right);
+	}
+}
+
+Tree::TreeNode* Tree::leftRotate(TreeNode* y)
+{
+	TreeNode* x = y->right;
+	TreeNode* T2 = x->left;
+
+	// Perform rotation  
+	x->left = y;
+	y->right = T2;
+
+	// Update heights  
+	y->height = max(height(y->right), height(y->left)) + 1;
+	x->height = max(height(x->right), height(x->left)) + 1;
+	return x;
+}
+
+Tree::TreeNode* Tree::rightRotate(TreeNode* y)
+{
+	TreeNode* x = y->left;
+	TreeNode* T2 = x->right;
+
+	// Perform rotation  
+	x->right = y;
+	y->left = T2;
+
+	// Update heights  
+	y->height = max(height(y->left), height(y->right)) + 1;
+	x->height = max(height(x->left), height(x->right)) + 1;
+	return x;
+}
+
+
+void Tree::printInorder(TreeNode*& node) const
 {
 	// Need to think how to finish sub problem
+	// left root right
 	if (node == nullptr)
 	{
 		return;
 	}
-	else 
+	else
 	{
 		printInorder(node->left);
 		std::cout << node->data << std::endl;
@@ -65,7 +149,7 @@ void Tree::printInorder(TreeNode*& node)
 	}
 }
 
-void Tree::printPreorder(TreeNode*& node)
+void Tree::printPreorder(TreeNode*& node) const
 {
 	if (node == nullptr)
 	{
@@ -79,7 +163,7 @@ void Tree::printPreorder(TreeNode*& node)
 	}
 }
 
-void Tree::printPostorder(TreeNode*& node)
+void Tree::printPostorder(TreeNode*& node) const
 {
 	if (node == nullptr)
 	{
@@ -92,7 +176,6 @@ void Tree::printPostorder(TreeNode*& node)
 		std::cout << node->data << std::endl;
 	}
 }
-
 
 void Tree::printAll(int mode)
 {
@@ -117,7 +200,8 @@ void Tree::printAll(int mode)
 }
 
 
-void Tree::removeLeaves(TreeNode*& parent, TreeNode*& child, const int value, int flag)
+
+void Tree::removeLeaves(TreeNode*& parent, TreeNode*& child, const int value, int flag) const
 {
 	if (value == child->data)
 	{
@@ -157,7 +241,7 @@ void Tree::removeLeaves(TreeNode*& parent, TreeNode*& child, const int value, in
 				sub_parent->left = temp;
 			}
 		}
-		else if((child->left != nullptr))
+		else if ((child->left != nullptr))
 		{
 			//one left child delete
 			if (flag == 1)
@@ -207,17 +291,16 @@ void Tree::removeLeaves(TreeNode*& parent, TreeNode*& child, const int value, in
 
 }
 
-
 void Tree::removeNode(int value)
 {
 	if (m_root->data == value)
 	{
 		// m_root has the value --> delete tree
 	}
-	else if(m_root->data < value)
+	else if (m_root->data < value)
 	{
 		// second node data is larger than value
-		int flag=-1; // initial value
+		int flag = -1; // initial value
 		removeLeaves(m_root, m_root->right, value, flag);
 	}
 	else
